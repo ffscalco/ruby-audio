@@ -1,8 +1,8 @@
 require 'rubygems'
 require 'rake'
-require 'rake/rdoctask'
-require 'rake/gempackagetask'
-require 'spec/rake/spectask'
+require 'rdoc/task'
+require 'rubygems/package_task'
+require 'rspec/core/rake_task'
 require 'rake/extensiontask'
 require 'rake/extensioncompiler'
 require 'mini_portile'
@@ -27,10 +27,15 @@ $recipes = {}
 LIBSNDFILE_VERSION = '1.0.24'
 $recipes[:libsndfile] = MiniPortile.new "libsndfile", LIBSNDFILE_VERSION
 $recipes[:libsndfile].files << "http://www.mega-nerd.com/libsndfile/files/libsndfile-#{LIBSNDFILE_VERSION}.tar.gz"
-$recipes.each { |_, recipe| recipe.host = Rake::ExtensionCompiler.mingw_host }
+# p Rake::ExtensionCompiler.methods
+# $recipes.each { |_, recipe| recipe.host = Rake::ExtensionCompiler.mingw_host }
 
-Spec::Rake::SpecTask.new do |t|
-  t.spec_opts = ['--options', 'spec/spec.opts']
+# Spec::Rake::SpecTask.new do |t|
+#   t.spec_opts = ['--options', 'spec/spec.opts']
+# end
+RSpec::Core::RakeTask.new do |t|
+  t.rspec_opts = ["-c", "-f progress", "-r ./spec/spec_helper.rb"]
+  t.pattern = 'spec/**/*_spec.rb'
 end
 
 desc 'Generate documentation'
@@ -42,7 +47,7 @@ Rake::RDocTask.new(:rdoc) do |rdoc|
   rdoc.rdoc_files.include("lib")
 end
 
-Rake::GemPackageTask.new(spec) do |pkg|
+Rake::PackageTask.new(spec, :noversion) do |pkg|
   pkg.need_zip = false
   pkg.need_tar = false
 end
@@ -54,7 +59,7 @@ Rake::ExtensionTask.new('rubyaudio_ext', spec) do |ext|
     ext.lib_dir = "lib/#{$1}"
   else
     ext.cross_compile = true
-    ext.cross_platform = 'x86-mingw32'
+    ext.cross_platform = 'arm64-darwin-21'
     ext.cross_config_options << "--with-sndfile-dir=#{$recipes[:libsndfile].path}"
     ext.cross_compiling do |gem_spec|
       gem_spec.post_install_message = "You installed the binary version of this gem!"

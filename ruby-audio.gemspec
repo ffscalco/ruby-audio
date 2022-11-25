@@ -16,7 +16,6 @@ Gem::Specification.new do |s|
 
   s.requirements << 'libsndfile (http://www.mega-nerd.com/libsndfile/)'
 
-  s.has_rdoc         = true
   s.extra_rdoc_files = Dir['README.rdoc', 'ext/**/*.c']
   s.rdoc_options     = ['--line-numbers', '--main', 'README.rdoc']
 end
